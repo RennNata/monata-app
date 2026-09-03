@@ -1,18 +1,26 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import DashboardView from '../views/DashboardView.vue'
-import LoginView from '../views/LoginView.vue'
-import RegisterView from '../views/RegisterView.vue'
+
+import LandingPageView from '../views/LandingPageView.vue'
+
+// Public
+import HomeView from '../views/Public/HomeView.vue'
+
+// Auth
+import LoginView from '../views/Auth/LoginView.vue'
+import RegisterView from '../views/Auth/RegisterView.vue'
+
+// Admin
+import DashboardView from '../views/Admin/DashboardView.vue'
 
 const routes = [
-  { path: '/', component: HomeView },
-  { path: '/login', component: LoginView },
-  { path: '/register', component: RegisterView },
+  { path: '/', component: LandingPageView, name: 'landing-page' },
+
+  { path: '/home-page', component: HomeView, name: 'home-page  ' },
+
+  { path: '/login', component: LoginView, name: 'login' },
+  { path: '/register', component: RegisterView, name: 'register' },
   { 
-    path: '/dashboard', 
-    component: DashboardView, 
-    meta: { requiresAuth: true } // Tandai halaman butuh login
-  }
+    path: '/dashboard', component: DashboardView, meta: { requiresAuth: true } } // Tandai halaman butuh login
 ]
 
 const router = createRouter({

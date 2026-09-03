@@ -6,8 +6,8 @@
 </template>
 
 <script setup>
-import AppNavbar from '../components/AppNavbar.vue'
-import HeroSection from '../components/HeroSection.vue'
+import AppNavbar from '../../components/AppNavbar.vue'
+import HeroSection from '../../components/HeroSection.vue'
 </script>
 
 <style scoped>

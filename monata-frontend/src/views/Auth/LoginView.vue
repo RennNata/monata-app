@@ -11,28 +11,45 @@
 
         <div class="header-text">
           <h2>Sign in</h2>
-          <p>Masukkan data akun tata usaha kamu untuk melanjutkan.</p>
+          <p>Masukkan data akun siswa kamu untuk melanjutkan.</p>
         </div>
 
         <form @submit.prevent="handleLogin">
           <div class="input-group">
             <label>Nama Lengkap</label>
-            <input type="text" v-model="form.name" required placeholder="Contoh: Budi Santoso" />
+            <input
+              type="text"
+              v-model="form.name"
+              required
+              placeholder="Contoh: Budi Santoso"
+            />
           </div>
 
           <div class="input-group">
             <label>NIS / NIP</label>
-            <input type="text" v-model="form.nis_nip" required placeholder="Masukkan NIS atau NIP..." />
+            <input
+              type="text"
+              v-model="form.nis_nip"
+              required
+              placeholder="Masukkan NIS atau NIP..."
+            />
           </div>
 
           <div class="input-group">
             <label>Password</label>
-            <input type="password" v-model="form.password" required placeholder="••••••••" />
+            <input
+              type="password"
+              v-model="form.password"
+              required
+              placeholder="••••••••"
+            />
           </div>
 
           <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
 
-          <button type="submit" class="btn-signin">Sign In</button>
+          <button type="submit" class="btn-signin" :disabled="isLoading">
+            {{ isLoading ? 'Signing In...' : 'Sign In' }}
+          </button>
         </form>
 
         <p class="signup-redirect">
@@ -46,12 +63,14 @@
       <div class="banner-content">
         <div class="logo-box">M</div>
         <h3>Welcome to Monata</h3>
-        <p>Platform tata usaha sekolah cerdas untuk mengelola tugas, surat, dan administrasi harian dengan cepat dan terpadu.</p>
-        
+        <p>
+          Sistem layanan Tata Usaha SMK Assalaam Bandung, mempermudah pemesanan dan pembelian perlengkapan sekolah.
+        </p>
+
         <!-- Floating Card di dalam Banner -->
         <div class="floating-card">
-          <h4>Sistem Administrasi Sekolah Terpadu</h4>
-          <p>Kelola data dan rekapitulasi sekolah jadi lebih efisien.</p>
+          <h4>Sistem Terpadu</h4>
+          <p>Pesan perlengkapan sekolah jadi lebih efisien.</p>
           <div class="card-footer">
             <div class="avatar-group">
               <span class="av">👨‍💻</span>
@@ -67,39 +86,52 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import api from '../services/api'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import api from "../../services/api";
 
-const router = useRouter()
+const router = useRouter();
 const form = ref({
-  name: '',
-  nis_nip: '',
-  password: ''
-})
-const errorMessage = ref('')
+  name: "",
+  nis_nip: "",
+  password: "",
+});
+const errorMessage = ref("");
+
+const isLoading = ref(false);
 
 const handleLogin = async () => {
   try {
-    errorMessage.value = ''
-    const response = await api.post('/login', form.value)
-    
+    errorMessage.value = "";
+    isLoading.value = true;
+    const response = await api.post("/login", form.value);
+
     // Simpan token dari backend Laravel
-    localStorage.setItem('token', response.data.token)
-    
+    localStorage.setItem("token", response.data.token);
+
     // Lempar ke dashboard
-    router.push('/dashboard')
+    if (response.data.role === "admin") {
+      router.push("/dashboard");
+    } else {
+      router.push("/home-page");
+    }
   } catch (error) {
-    errorMessage.value = error.response?.data?.message || 'Gagal login, periksa kembali Nama, NIS/NIP, dan Password Anda.'
+    errorMessage.value =
+      error.response?.data?.message ||
+      "Gagal login, periksa kembali Nama, NIS/NIP, dan Password Anda.";
   }
-}
+};
 </script>
 
 <style scoped>
+.btn-signin:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 .split-auth {
   display: flex;
   min-height: 100vh;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   background: #ffffff;
 }
 
@@ -123,9 +155,17 @@ const handleLogin = async () => {
   font-size: 18px;
   margin-bottom: 36px;
 }
-.dot { width: 8px; height: 8px; border-radius: 50%; }
-.dot.blue { background: #3b82f6; }
-.dot.dark { background: #0f172a; }
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.dot.blue {
+  background: #3b82f6;
+}
+.dot.dark {
+  background: #0f172a;
+}
 
 .header-text h2 {
   font-size: 28px;
@@ -288,6 +328,8 @@ const handleLogin = async () => {
 
 /* Responsif untuk layar kecil */
 @media (max-width: 900px) {
-  .banner-section { display: none; }
+  .banner-section {
+    display: none;
+  }
 }
 </style>

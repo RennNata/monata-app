@@ -11,28 +11,46 @@
 
         <div class="header-text">
           <h2>Create Account</h2>
-          <p>Daftarkan akun tata usaha atau siswa baru Monata.</p>
+          <p>Daftarkan akun siswa Anda ke Monata.</p>
         </div>
 
         <form @submit.prevent="handleRegister">
           <div class="input-group">
             <label>Nama Lengkap</label>
-            <input type="text" v-model="form.name" required placeholder="Contoh: Budi Santoso" />
+            <input
+              type="text"
+              v-model="form.name"
+              required
+              placeholder="Contoh: Budi Santoso"
+            />
           </div>
 
           <div class="input-group">
             <label>NIS / NIP</label>
-            <input type="text" v-model="form.nis_nip" required placeholder="Masukkan NIS atau NIP..." />
+            <input
+              type="text"
+              v-model="form.nis_nip"
+              required
+              placeholder="Masukkan NIS atau NIP..."
+            />
           </div>
 
           <div class="input-group">
             <label>Password (Min. 8 karakter)</label>
-            <input type="password" v-model="form.password" required placeholder="••••••••" />
+            <input
+              type="password"
+              v-model="form.password"
+              required
+              placeholder="••••••••"
+            />
           </div>
 
           <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
 
-          <button type="submit" class="btn-signin">Sign Up</button>
+          <p v-if="successMessage" class="success-text">{{ successMessage }}</p>
+          <button type="submit" class="btn-signin" :disabled="isLoading">
+            {{ isLoading ? 'Signing Up...' : 'Sign Up' }}
+          </button>
         </form>
 
         <p class="signup-redirect">
@@ -46,12 +64,14 @@
       <div class="banner-content">
         <div class="logo-box">M</div>
         <h3>Join Monata Today</h3>
-        <p>Sistem manajemen administrasi sekolah terpadu yang mempermudah rekap tugas, surat, dan aktivitas harian dengan efisien.</p>
-        
+        <p>
+          Sistem layanan Tata Usaha SMK Assalaam Bandung, mempermudah pemesanan dan pembelian perlengkapan sekolah.
+        </p>
+
         <!-- Floating Card di dalam Banner -->
         <div class="floating-card">
-          <h4>Mulai Kelola Tugas Lebih Cepat</h4>
-          <p>Kolaborasi tim tata usaha jadi lebih terstruktur.</p>
+          <h4>Mulai </h4>
+          <p>Transaksi perlengkapan sekolah lebih terstruktur.</p>
           <div class="card-footer">
             <div class="avatar-group">
               <span class="av">🚀</span>
@@ -67,35 +87,50 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import api from '../services/api'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import api from "../../services/api";
 
-const router = useRouter()
+const router = useRouter();
 const form = ref({
-  name: '',
-  nis_nip: '',
-  password: ''
-})
-const errorMessage = ref('')
+  name: "",
+  nis_nip: "",
+  password: "",
+});
+const errorMessage = ref("");
+
+const isLoading = ref(false);
+const successMessage = ref("");
 
 const handleRegister = async () => {
   try {
-    errorMessage.value = ''
-    const response = await api.post('/register', form.value)
-    alert(response.data.message)
-    router.push('/login') // Lempar ke halaman login kalau sukses
+    errorMessage.value = "";
+    isLoading.value = true;
+    const response = await api.post("/register", form.value);
+    successMessage.value = response.data.message;
+    router.push("/login"); // Lempar ke halaman login kalau sukses
   } catch (error) {
-    errorMessage.value = error.response?.data?.message || 'Terjadi kesalahan saat registrasi.'
+    errorMessage.value =
+      error.response?.data?.message || "Terjadi kesalahan saat registrasi.";
+  } finally {
+    isLoading.value = false;
   }
-}
+};
 </script>
 
 <style scoped>
+.success-text {
+  font-size: 13px;
+  color: #22c55e;
+}
+.btn-signin:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 .split-auth {
   display: flex;
   min-height: 100vh;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   background: #ffffff;
 }
 
@@ -119,9 +154,17 @@ const handleRegister = async () => {
   font-size: 18px;
   margin-bottom: 36px;
 }
-.dot { width: 8px; height: 8px; border-radius: 50%; }
-.dot.blue { background: #3b82f6; }
-.dot.dark { background: #0f172a; }
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.dot.blue {
+  background: #3b82f6;
+}
+.dot.dark {
+  background: #0f172a;
+}
 
 .header-text h2 {
   font-size: 28px;
@@ -284,6 +327,8 @@ const handleRegister = async () => {
 
 /* Responsif untuk layar kecil */
 @media (max-width: 900px) {
-  .banner-section { display: none; }
+  .banner-section {
+    display: none;
+  }
 }
 </style>

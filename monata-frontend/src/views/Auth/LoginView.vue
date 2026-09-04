@@ -113,8 +113,9 @@ const handleLogin = async () => {
     localStorage.setItem('role', user.role);
 
     // Lempar ke dashboard
+    // Lempar ke dashboard admin yang benar
     if (user.role === "admin") {
-      router.push("/dashboard");
+      router.push("/admin/dashboard"); // <-- Diperbarui ke path nested admin
     } else {
       router.push("/home-page");
     }

@@ -11,10 +11,6 @@
 
       <!-- Navigation Menu -->
       <nav class="nav-menu">
-        <router-link to="/admin/dashboard" class="nav-item" active-class="active">
-          <span class="icon">📊</span>
-          <span>Dashboard</span>
-        </router-link>
 
         <router-link to="/admin/kategori" class="nav-item" active-class="active">
           <span class="icon">📁</span>

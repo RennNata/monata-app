@@ -106,11 +106,14 @@ const handleLogin = async () => {
     isLoading.value = true;
     const response = await api.post("/login", form.value);
 
+    const { token, user } = response.data;
+
     // Simpan token dari backend Laravel
-    localStorage.setItem("token", response.data.token);
+    localStorage.setItem("token", token);
+    localStorage.setItem('role', user.role);
 
     // Lempar ke dashboard
-    if (response.data.role === "admin") {
+    if (user.role === "admin") {
       router.push("/dashboard");
     } else {
       router.push("/home-page");

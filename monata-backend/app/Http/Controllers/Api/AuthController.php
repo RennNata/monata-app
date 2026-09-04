@@ -64,12 +64,15 @@ class AuthController extends Controller
                 ], 401);
             }
 
+            
+
             $token = $user->createToken('api-token')->plainTextToken;
 
             return response()->json([
                 'status' => true,
                 'message' => 'Login berhasil',
-                'token' => $token
+                'token' => $token,
+                'user' => $user
             ], 200);
 
         } catch (Exception $e) {

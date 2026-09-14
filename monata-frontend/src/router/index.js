@@ -12,6 +12,9 @@ import RegisterView from '../views/Auth/RegisterView.vue'
 // Admin
 import DashboardView from '../views/Admin/DashboardView.vue'
 
+import KelolaKategori from '../views/Admin/KelolaKategori.vue'
+import KelolaProduk from '../views/Admin/KelolaProduk.vue'
+
 const routes = [
   { path: '/', component: LandingPageView, name: 'landing-page' },
 
@@ -20,7 +23,11 @@ const routes = [
   { path: '/login', component: LoginView, name: 'login' },
   { path: '/register', component: RegisterView, name: 'register' },
   { 
-    path: '/dashboard', component: DashboardView, meta: { requiresAuth: true } } // Tandai halaman butuh login
+    path: '/dashboard', component: DashboardView, meta: { requiresAuth: true } }, // Tandai halaman butuh login
+  { 
+    path: '/dashboard/categories', component: KelolaKategori, meta: { requiresAuth: true } },
+  { 
+    path: '/dashboard/products', component: KelolaProduk, meta: { requiresAuth: true } }
 ]
 
 const router = createRouter({

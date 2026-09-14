@@ -88,7 +88,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import api from "../../services/api";
+import axios from "axios";
 
 const router = useRouter();
 const form = ref({
@@ -97,33 +97,33 @@ const form = ref({
   password: "",
 });
 const errorMessage = ref("");
-
 const isLoading = ref(false);
 
 const handleLogin = async () => {
-  try {
-    errorMessage.value = "";
-    isLoading.value = true;
-    const response = await api.post("/login", form.value);
+  isLoading.value = true;
+  errorMessage.value = "";
 
+  try {
+    const response = await axios.post('http://localhost:8000/api/login', form.value);
+    
+    // Ambil token & user dari response
     const { token, user } = response.data;
 
-    // Simpan token dari backend Laravel
-    localStorage.setItem("token", token);
+    // Simpan ke Local Storage
+    localStorage.setItem('token', token);
     localStorage.setItem('role', user.role);
 
-    // Lempar ke dashboard
-    if (user.role === "admin") {
-      router.push("/dashboard");
-    } else {
-      router.push("/home-page");
-    }
+    console.log('Token berhasil kesimpen:', localStorage.getItem('token'));
+
+    // Pindah ke dashboard
+    router.push('/dashboard');
   } catch (error) {
-    errorMessage.value =
-      error.response?.data?.message ||
-      "Gagal login, periksa kembali Nama, NIS/NIP, dan Password Anda.";
+    console.error('Error Login:', error);
+    errorMessage.value = error.response?.data?.message || 'Gagal login, cek NIS/Password';
+  } finally {
+    isLoading.value = false;
   }
-};
+}
 </script>
 
 <style scoped>

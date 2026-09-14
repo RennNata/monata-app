@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
             'name' => 'Admin Monata',
             'nis_nip' => '1234567890',
             'password' => Hash::make('admin1234'),
-            'role' => 'admin'
+            'role' => 'super_admin'
         ]);
     }
 }

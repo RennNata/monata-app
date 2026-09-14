@@ -10,6 +10,8 @@ import LoginView from '../views/Auth/LoginView.vue'
 import RegisterView from '../views/Auth/RegisterView.vue'
 
 // Admin
+// PERBAIKAN: Tambahkan folder /Admin/ pada path import di bawah ini
+import AdminLayout from '../views/Admin/AdminLayout.vue' 
 import DashboardView from '../views/Admin/DashboardView.vue'
 
 import KelolaKategori from '../views/Admin/KelolaKategori.vue'
@@ -17,11 +19,11 @@ import KelolaProduk from '../views/Admin/KelolaProduk.vue'
 
 const routes = [
   { path: '/', component: LandingPageView, name: 'landing-page' },
-
-  { path: '/home-page', component: HomeView, name: 'home-page  ' },
-
+  { path: '/home-page', component: HomeView, name: 'home-page' },
   { path: '/login', component: LoginView, name: 'login' },
   { path: '/register', component: RegisterView, name: 'register' },
+  
+  // Grouping khusus Admin (Nested Routes)
   { 
     path: '/dashboard', component: DashboardView, meta: { requiresAuth: true } }, // Tandai halaman butuh login
   { 
@@ -35,11 +37,11 @@ const router = createRouter({
   routes
 })
 
-// Penjaga Rute (Route Guard)
+// Route Guard
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   if (to.meta.requiresAuth && !token) {
-    next('/login') // Kalau mau masuk dashboard tapi tida ada token, lempar ke login
+    next('/login')
   } else {
     next()
   }

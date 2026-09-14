@@ -48,7 +48,7 @@
           <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
 
           <button type="submit" class="btn-signin" :disabled="isLoading">
-            {{ isLoading ? 'Signing In...' : 'Sign In' }}
+            {{ isLoading ? "Signing In..." : "Sign In" }}
           </button>
         </form>
 
@@ -64,7 +64,8 @@
         <div class="logo-box">M</div>
         <h3>Welcome to Monata</h3>
         <p>
-          Sistem layanan Tata Usaha SMK Assalaam Bandung, mempermudah pemesanan dan pembelian perlengkapan sekolah.
+          Sistem layanan Tata Usaha SMK Assalaam Bandung, mempermudah pemesanan
+          dan pembelian perlengkapan sekolah.
         </p>
 
         <!-- Floating Card di dalam Banner -->
@@ -104,26 +105,30 @@ const handleLogin = async () => {
   errorMessage.value = "";
 
   try {
-    const response = await axios.post('http://localhost:8000/api/login', form.value);
-    
+    const response = await axios.post(
+      "http://localhost:8000/api/login",
+      form.value,
+    );
+
     // Ambil token & user dari response
     const { token, user } = response.data;
 
     // Simpan ke Local Storage
-    localStorage.setItem('token', token);
-    localStorage.setItem('role', user.role);
+    localStorage.setItem("token", token);
+    localStorage.setItem("role", user.role);
 
-    console.log('Token berhasil kesimpen:', localStorage.getItem('token'));
+    console.log("Token berhasil kesimpen:", localStorage.getItem("token"));
 
     // Pindah ke dashboard
-    router.push('/dashboard');
+    router.push("/dashboard");
   } catch (error) {
-    console.error('Error Login:', error);
-    errorMessage.value = error.response?.data?.message || 'Gagal login, cek NIS/Password';
+    console.error("Error Login:", error);
+    errorMessage.value =
+      error.response?.data?.message || "Gagal login, cek NIS/Password";
   } finally {
     isLoading.value = false;
   }
-}
+};
 </script>
 
 <style scoped>

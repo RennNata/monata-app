@@ -1,10 +1,10 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://10.50.37.5:8000/api',
+  baseURL: 'https://mayra-glaucous-cloudlessly.ngrok-free.dev/api',
   headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json',
+    'ngrok-skip-browser-warning': 'true' // <--- Tambahin ini bro!
   }
 })
 

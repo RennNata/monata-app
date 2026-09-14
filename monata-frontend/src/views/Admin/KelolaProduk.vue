@@ -5,11 +5,11 @@
     <main class="main-content">
       <div class="page-header">
         <div>
-          <h2>Kelola Produk</h2>
-          <p>Atur dan rapihin semua produk toko lu di sini.</p>
+          <h2>Kelola Kategori</h2>
+          <p>Atur dan rapihin semua kategori produk toko lu di sini.</p>
         </div>
         <button class="btn-primary" @click="openModal('add')">
-          <span>+</span> Tambah Produk
+          <span>+</span> Tambah Kategori
         </button>
       </div>
 
@@ -18,21 +18,22 @@
           <thead>
             <tr>
               <th>ID</th>
-              <th>Nama Produk</th>
-              <th>Harga</th>
+              <th>Nama Kategori</th>
+              <th>Deskripsi</th>
               <th>Aksi</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="isLoading">
-              <td colspan="5" class="empty-state">Lagi ngambil data dari server... Sabar!</td>
+              <td colspan="4" class="empty-state">Lagi ngambil data dari server... Sabar!</td>
             </tr>
             <tr v-else-if="categories.length === 0">
-              <td colspan="5" class="empty-state">Belum ada data kategori. Sepi amat!</td>
+              <td colspan="4" class="empty-state">Belum ada data kategori. Sepi amat!</td>
             </tr>
             <tr v-else v-for="(cat, index) in categories" :key="cat.id">
               <td>#{{ index + 1 }}</td>
               <td class="font-bold">{{ cat.nama_kategori }}</td>
+              <td>{{ cat.description || '-' }}</td>
               <td>
                 <div class="action-buttons">
                   <button class="btn-edit" @click="openModal('edit', cat)">Edit</button>
@@ -44,6 +45,7 @@
         </table>
       </div>
 
+      <!-- Modal Tambah/Edit Kategori -->
       <div v-if="isModalOpen" class="modal-overlay" @click.self="closeModal">
         <div class="modal-box">
           <h3>{{ isEditMode ? 'Edit Kategori' : 'Tambah Kategori Baru' }}</h3>
@@ -56,6 +58,14 @@
                 placeholder="Contoh: Seragam Sekolah" 
                 required 
               />
+            </div>
+            <div class="form-group">
+              <label>Deskripsi</label>
+              <textarea 
+                v-model="form.description" 
+                placeholder="Masukkan deskripsi kategori..." 
+                rows="3"
+              ></textarea>
             </div>
             <div class="modal-actions">
               <button type="button" class="btn-cancel" @click="closeModal">Batal</button>
@@ -76,9 +86,10 @@ import axios from 'axios'
 import Sidebar from '../../components/Sidebar.vue'
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: 'https://mayra-glaucous-cloudlessly.ngrok-free.dev/api',
   headers: {
-    'Accept': 'application/json'
+    'Accept': 'application/json',
+    'ngrok-skip-browser-warning': 'true'
   }
 })
 
@@ -106,7 +117,6 @@ const fetchCategories = async () => {
   isLoading.value = true
   try {
     const response = await api.get('/dashboard/categories')
-    // Pake response.data.data kalo dari Laravel API Resource, atau response.data biasa
     categories.value = response.data.data || response.data
   } catch (error) {
     console.error('Error fetch categories:', error)
@@ -150,7 +160,7 @@ const openModal = (mode, category = null) => {
   if (mode === 'edit' && category) {
     selectedId.value = category.id
     form.nama_kategori = category.nama_kategori
-    form.description = category.description
+    form.description = category.description || ''
   } else {
     selectedId.value = null
     form.nama_kategori = ''
@@ -195,21 +205,17 @@ th, td {
   margin-bottom: 24px;
 }
 
-.page-header h2{
+.page-header h2 {
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0 0 4px 0;
-  color: #ffffff;
-}
-
-h2 {
-  color: #243248 !important;
+  color: #0f172a;
 }
 
 .page-header p {
   margin: 0;
   font-size: 0.875rem;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .table-card {
@@ -254,16 +260,6 @@ h2 {
 .font-bold {
   font-weight: 600;
   color: #f8fafc;
-}
-
-.badge-slug {
-  background-color: #0f172a;
-  color: #38bdf8;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-family: monospace;
-  font-size: 0.8rem;
-  border: 1px solid #1e293b;
 }
 
 .btn-primary {

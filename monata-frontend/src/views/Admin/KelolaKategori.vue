@@ -75,9 +75,10 @@ import axios from 'axios'
 import Sidebar from '../../components/Sidebar.vue'
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: 'https://mayra-glaucous-cloudlessly.ngrok-free.dev/api',
   headers: {
-    'Accept': 'application/json'
+    'Accept': 'application/json',
+    'ngrok-skip-browser-warning': 'true'
   }
 })
 

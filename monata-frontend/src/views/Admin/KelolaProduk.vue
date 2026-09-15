@@ -6,7 +6,7 @@
       <div class="page-header">
         <div>
           <h2>Kelola Produk</h2>
-          <p>Atur dan rapihin semua produk toko lu di sini.</p>
+          <p>Atur semua produk, stok, harga, dan kategorinya di sini.</p>
         </div>
         <button class="btn-primary" @click="openModal('add')">
           <span>+</span> Tambah Produk
@@ -17,26 +17,41 @@
         <table class="custom-table">
           <thead>
             <tr>
-              <th>ID</th>
+              <th>No</th>
+              <th>Foto</th>
               <th>Nama Produk</th>
+              <th>Kategori</th>
               <th>Harga</th>
+              <th>Stok</th>
               <th>Aksi</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="isLoading">
-              <td colspan="5" class="empty-state">Lagi ngambil data dari server... Sabar!</td>
+              <td colspan="7" class="empty-state">Lagi ngambil data produk... Sabar ya!</td>
             </tr>
-            <tr v-else-if="categories.length === 0">
-              <td colspan="5" class="empty-state">Belum ada data kategori. Sepi amat!</td>
+            <tr v-else-if="products.length === 0">
+              <td colspan="7" class="empty-state">Belum ada data produk. Tambahin dulu yuk!</td>
             </tr>
-            <tr v-else v-for="(cat, index) in categories" :key="cat.id">
+            <tr v-else v-for="(prod, index) in products" :key="prod.id">
               <td>#{{ index + 1 }}</td>
-              <td class="font-bold">{{ cat.nama_kategori }}</td>
+              <td>
+                <img 
+                  v-if="prod.foto" 
+                  :src="getFotoUrl(prod.foto)" 
+                  alt="Foto Produk" 
+                  class="img-thumbnail" 
+                />
+                <span v-else class="empty-text">-</span>
+              </td>
+              <td class="font-bold">{{ prod.nama_produk }}</td>
+              <td>{{ getCategoryName(prod.id_kategori, prod.category) }}</td>
+              <td>Rp {{ Number(prod.harga).toLocaleString('id-ID') }}</td>
+              <td>{{ prod.stok }}</td>
               <td>
                 <div class="action-buttons">
-                  <button class="btn-edit" @click="openModal('edit', cat)">Edit</button>
-                  <button class="btn-delete" @click="deleteCategory(cat.id)">Hapus</button>
+                  <button class="btn-edit" @click="openModal('edit', prod)">Edit</button>
+                  <button class="btn-delete" @click="deleteProduct(prod.id)">Hapus</button>
                 </div>
               </td>
             </tr>
@@ -44,23 +59,60 @@
         </table>
       </div>
 
+      <!-- Modal Tambah/Edit Produk -->
       <div v-if="isModalOpen" class="modal-overlay" @click.self="closeModal">
         <div class="modal-box">
-          <h3>{{ isEditMode ? 'Edit Kategori' : 'Tambah Kategori Baru' }}</h3>
-          <form @submit.prevent="saveCategory">
+          <h3>{{ isEditMode ? 'Edit Produk' : 'Tambah Produk Baru' }}</h3>
+          <form @submit.prevent="saveProduct">
             <div class="form-group">
-              <label>Nama Kategori</label>
+              <label>Nama Produk</label>
               <input 
-                v-model="form.nama_kategori" 
+                v-model="form.nama_produk" 
                 type="text" 
-                placeholder="Contoh: Seragam Sekolah" 
+                placeholder="Contoh: Seragam SD Lengan Pendek" 
                 required 
               />
             </div>
+
+            <div class="form-group">
+              <label>Kategori</label>
+              <select v-model="form.id_kategori" required>
+                <option value="" disabled>-- Pilih Kategori --</option>
+                <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                  {{ cat.nama_kategori }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Harga (Rp)</label>
+              <input 
+                v-model="form.harga" 
+                type="number" 
+                placeholder="Contoh: 75000" 
+                required 
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Stok</label>
+              <input 
+                v-model="form.stok" 
+                type="number" 
+                placeholder="Contoh: 50" 
+                required 
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Foto Produk (Opsional)</label>
+              <input type="file" @change="handleFileUpload" accept="image/*" />
+            </div>
+
             <div class="modal-actions">
               <button type="button" class="btn-cancel" @click="closeModal">Batal</button>
               <button type="submit" class="btn-primary" :disabled="isSaving">
-                {{ isSaving ? 'Ngesave...' : (isEditMode ? 'Simpan Perubahan' : 'Tambah Kategori') }}
+                {{ isSaving ? 'Ngesave...' : (isEditMode ? 'Simpan Perubahan' : 'Tambah Produk') }}
               </button>
             </div>
           </form>
@@ -76,9 +128,10 @@ import axios from 'axios'
 import Sidebar from '../../components/Sidebar.vue'
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: 'https://mayra-glaucous-cloudlessly.ngrok-free.dev/api',
   headers: {
-    'Accept': 'application/json'
+    'Accept': 'application/json',
+    'ngrok-skip-browser-warning': 'true'
   }
 })
 
@@ -90,6 +143,7 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+const products = ref([])
 const categories = ref([])
 const isLoading = ref(false)
 const isSaving = ref(false)
@@ -98,63 +152,97 @@ const isEditMode = ref(false)
 const selectedId = ref(null)
 
 const form = reactive({
-  nama_kategori: '',
-  description: ''
+  id_kategori: '',
+  nama_produk: '',
+  harga: '',
+  stok: '',
+  foto: null
 })
 
-const fetchCategories = async () => {
+// Fetch data produk & data kategori buat dropdown
+const fetchData = async () => {
   isLoading.value = true
   try {
-    const response = await api.get('/dashboard/categories')
-    // Pake response.data.data kalo dari Laravel API Resource, atau response.data biasa
-    categories.value = response.data.data || response.data
+    const [resProducts, resCategories] = await Promise.all([
+      api.get('/dashboard/products'),
+      api.get('/dashboard/categories')
+    ])
+    
+    products.value = resProducts.data.data || resProducts.data
+    categories.value = resCategories.data.data || resCategories.data
   } catch (error) {
-    console.error('Error fetch categories:', error)
-    alert(error.response?.data?.message || 'Gagal ngambil data kategori dari database!')
+    console.error('Error fetching data:', error)
+    alert(error.response?.data?.message || 'Gagal ngambil data dari database!')
   } finally {
     isLoading.value = false
   }
 }
 
-const saveCategory = async () => {
+// Handling upload file foto
+const handleFileUpload = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    form.foto = file
+  }
+}
+
+const saveProduct = async () => {
   isSaving.value = true
   try {
+    const formData = new FormData()
+    formData.append('id_kategori', form.id_kategori)
+    formData.append('nama_produk', form.nama_produk)
+    formData.append('harga', form.harga)
+    formData.append('stok', form.stok)
+    
+    if (form.foto instanceof File) {
+      formData.append('foto', form.foto)
+    }
+
     if (isEditMode.value) {
-      await api.put(`/dashboard/categories/${selectedId.value}`, form)
+      // Laravel butuh _method = PUT kalau ngirim FormData lewat POST
+      formData.append('_method', 'PUT')
+      await api.post(`/dashboard/products/${selectedId.value}`, formData)
     } else {
-      await api.post('/dashboard/categories', form)
+      await api.post('/dashboard/products', formData)
     }
     
-    await fetchCategories()
+    await fetchData()
     closeModal()
   } catch (error) {
-    alert(error.response?.data?.message || 'Gagal menyimpan data kategori!')
+    alert(error.response?.data?.message || 'Gagal menyimpan data produk!')
   } finally {
     isSaving.value = false
   }
 }
 
-const deleteCategory = async (id) => {
-  if (!confirm('Yakin mau hapus kategori ini? Data gak bisa diganti lagi pas dihapus!')) return
+const deleteProduct = async (id) => {
+  if (!confirm('Yakin mau hapus produk ini? Data bakal hilang permanen!')) return
 
   try {
-    await api.delete(`/dashboard/categories/${id}`)
-    await fetchCategories()
+    await api.delete(`/dashboard/products/${id}`)
+    await fetchData()
   } catch (error) {
     alert(error.response?.data?.message || 'Gagal ngehapus data!')
   }
 }
 
-const openModal = (mode, category = null) => {
+const openModal = (mode, product = null) => {
   isEditMode.value = mode === 'edit'
-  if (mode === 'edit' && category) {
-    selectedId.value = category.id
-    form.nama_kategori = category.nama_kategori
-    form.description = category.description
+  if (mode === 'edit' && product) {
+    selectedId.value = product.id
+    form.id_kategori = product.id_kategori
+    form.nama_produk = product.nama_produk
+    form.harga = product.harga
+    form.stok = product.stok
+    form.foto = null // foto diisi cuma kalau user mau ubah gambar
   } else {
     selectedId.value = null
-    form.nama_kategori = ''
-    form.description = ''
+    form.id_kategori = ''
+    form.nama_produk = ''
+    form.harga = ''
+    form.stok = ''
+    form.foto = null
   }
   isModalOpen.value = true
 }
@@ -163,8 +251,22 @@ const closeModal = () => {
   isModalOpen.value = false
 }
 
+// Helper nampilin nama kategori di tabel
+const getCategoryName = (categoryId, categoryObject) => {
+  if (categoryObject?.nama_kategori) return categoryObject.nama_kategori
+  const found = categories.value.find(c => c.id === categoryId)
+  return found ? found.nama_kategori : '-'
+}
+
+// Helper nampilin URL Foto
+const getFotoUrl = (fotoPath) => {
+  if (!fotoPath) return ''
+  if (fotoPath.startsWith('http')) return fotoPath
+  return `https://mayra-glaucous-cloudlessly.ngrok-free.dev/storage/${fotoPath}`
+}
+
 onMounted(() => {
-  fetchCategories()
+  fetchData()
 })
 </script>
 
@@ -195,21 +297,17 @@ th, td {
   margin-bottom: 24px;
 }
 
-.page-header h2{
+.page-header h2 {
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0 0 4px 0;
-  color: #ffffff;
-}
-
-h2 {
-  color: #243248 !important;
+  color: #0f172a;
 }
 
 .page-header p {
   margin: 0;
   font-size: 0.875rem;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .table-card {
@@ -245,25 +343,26 @@ h2 {
   background-color: #243248;
 }
 
+.img-thumbnail {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
 .empty-state {
   text-align: center;
   padding: 32px;
   color: #64748b;
 }
 
+.empty-text {
+  color: #64748b;
+}
+
 .font-bold {
   font-weight: 600;
   color: #f8fafc;
-}
-
-.badge-slug {
-  background-color: #0f172a;
-  color: #38bdf8;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-family: monospace;
-  font-size: 0.8rem;
-  border: 1px solid #1e293b;
 }
 
 .btn-primary {
@@ -380,6 +479,7 @@ h2 {
 }
 
 .form-group input,
+.form-group select,
 .form-group textarea {
   width: 100%;
   padding: 10px 12px;
@@ -391,6 +491,7 @@ h2 {
 }
 
 .form-group input:focus,
+.form-group select:focus,
 .form-group textarea:focus {
   outline: 2px solid #3b82f6;
   border-color: transparent;

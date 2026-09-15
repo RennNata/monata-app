@@ -10,7 +10,11 @@ import axios from 'axios'
 
 // Buat instance axios dengan base URL API Laravel kita
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: 'https://mayra-glaucous-cloudlessly.ngrok-free.dev/api',
+  headers: {
+    'Accept': 'application/json',
+    'ngrok-skip-browser-warning': 'true' // <--- Tambahin ini bro!
+  }
 })
 
 // Interceptor = "petugas" yang berjalan sebelum setiap request dikirim

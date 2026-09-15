@@ -39,8 +39,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // --- admin & super admin ---
     Route::middleware('role:admin,super_admin')->prefix('dashboard')->group(function () {
     
-        Route::apiResource('categories', CategoryController::class)->except(['index', 'show']);
-        Route::apiResource('products', ProductController::class)->except(['index', 'show']);
+        Route::apiResource('categories', CategoryController::class);
+        Route::apiResource('products', ProductController::class);
         
         Route::get('/transactions', [TransactionController::class, 'index']);
         Route::get('/transactions/{id}', [TransactionController::class, 'show']);

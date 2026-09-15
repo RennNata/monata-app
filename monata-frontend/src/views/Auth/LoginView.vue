@@ -108,10 +108,18 @@ const handleLogin = async () => {
     const response = await axios.post(
       "https://mayra-glaucous-cloudlessly.ngrok-free.dev/api/login",
       form.value,
+      {
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
     );
 
+    console.log("Login Response:", response.data);
+
     // Ambil token & user dari response
-    const { token, user } = response.data;
+    const token = response.data.token || response.data.data?.token;
+    const user = response.data.user || response.data.data?.user;
 
     // Simpan ke Local Storage
     localStorage.setItem("token", token);
@@ -124,7 +132,7 @@ const handleLogin = async () => {
   } catch (error) {
     console.error("Error Login:", error);
     errorMessage.value =
-      error.response?.data?.message || "Gagal login, cek NIS/Password";
+      error.response?.data?.message || error.message || "Gagal login, cek NIS/Password";
   } finally {
     isLoading.value = false;
   }

@@ -20,6 +20,7 @@ class CategoryController extends Controller
                 'message' => 'Data kategori berhasil diambil',
                 'data' => $categories
             ]);
+            
         } catch (Exception $e) {
             return response()->json([
                 'status' => false,

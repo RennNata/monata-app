@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('id_user')->constrained('users')->cascadeOnDelete();
             $table->foreignId('id_admin')->nullable()->constrained('users')->nullOnDelete();
             $table->integer('total_harga');
-            $table->enum('tipe_transaksi', ['langsung', 'booking']);
+            $table->enum('status_pembayaran', ['belum_bayar', 'sudah_bayar'])->default('belum_bayar');
             $table->enum('status', ['pending', 'selesai', 'dibatalkan'])->default('pending');
             $table->timestamps();
         });

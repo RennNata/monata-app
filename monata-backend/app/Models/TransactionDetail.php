@@ -10,6 +10,7 @@ class TransactionDetail extends Model
         'id_transaksi',
         'id_produk',
         'jumlah',
+        'harga_satuan',
         'subtotal'
     ];
 

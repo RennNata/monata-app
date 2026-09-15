@@ -8,25 +8,48 @@ use App\Http\Controllers\Api\Admin\AdminManagementController;
 use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\ProductController;
 use App\Http\Controllers\Api\Admin\TransactionController;
-use App\Http\Controllers\Api\Admin\TransactionDetailController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
+// --- public ---
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware(['auth:sanctum', 'role:admin,super_admin'])->prefix('dashboard')->group(function () {
+// --- authenticated ---
+Route::middleware(['auth:sanctum'])->group(function () {
 
-    Route::get('/', [AuthController::class, 'getAllUsers']);
+    // auth & profile
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+    Route::get('/profile', [AuthController::class, 'profile']);
 
-    Route::apiResource('categories', CategoryController::class);
-    Route::apiResource('products', ProductController::class);
-    Route::apiResource('transactions', TransactionController::class);
-    Route::apiResource('transaction-details', TransactionDetailController::class);
+    // --- siswa ---
+    // Katalog & Produk (Read Only)
+    Route::get('/categories', [CategoryController::class, 'index']);
+    Route::get('/categories/{id}', [CategoryController::class, 'show']);
+    Route::get('/products', [ProductController::class, 'index']);
+    Route::get('/products/{id}', [ProductController::class, 'show']);
 
-    Route::middleware('role:super_admin')->group(function () {
-        Route::apiResource('admins', AdminManagementController::class);
+    // Transaksi Siswa (Checkout & Riwayat)
+    Route::get('/transactions', [TransactionController::class, 'index']);
+    Route::get('/transactions/{id}', [TransactionController::class, 'show']);
+    Route::post('/transactions', [TransactionController::class, 'store']); // Ini udah sekalian simpen detail
+
+
+    // --- admin & super admin ---
+    Route::middleware('role:admin,super_admin')->prefix('dashboard')->group(function () {
+    
+        Route::apiResource('categories', CategoryController::class)->except(['index', 'show']);
+        Route::apiResource('products', ProductController::class)->except(['index', 'show']);
+        
+        Route::get('/transactions', [TransactionController::class, 'index']);
+        Route::get('/transactions/{id}', [TransactionController::class, 'show']);
+        Route::patch('/transactions/{id}/status', [TransactionController::class, 'updateStatus']);
+        
+        // --- super admin ---
+        Route::middleware('role:super_admin')->group(function () {
+            Route::get('/users', [AuthController::class, 'getAllUsers']);
+            Route::apiResource('admins', AdminManagementController::class);
+        });
     });
 });

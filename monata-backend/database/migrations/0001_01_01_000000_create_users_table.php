@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('nis_nip')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['super_admin', 'admin', 'siswa']);
+            $table->enum('role', ['super_admin', 'admin', 'siswa'])->default('siswa');
             $table->rememberToken();
             $table->timestamps();
         });

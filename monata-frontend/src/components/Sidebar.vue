@@ -29,11 +29,6 @@
           <span>Kelola Transaksi</span>
         </router-link>
 
-        <router-link to="/dashboard/detail-transaksi" class="nav-item" active-class="active">
-          <span class="icon">📄</span>
-          <span>Detail Transaksi</span>
-        </router-link>
-
         <div class="menu-divider"></div>
 
         <router-link to="/dashboard /kelola-admin" class="nav-item" active-class="active">

@@ -10,12 +10,13 @@ import LoginView from '../views/Auth/LoginView.vue'
 import RegisterView from '../views/Auth/RegisterView.vue'
 
 // Admin
-// PERBAIKAN: Tambahkan folder /Admin/ pada path import di bawah ini
 import AdminLayout from '../views/Admin/AdminLayout.vue' 
 import DashboardView from '../views/Admin/DashboardView.vue'
 
 import KelolaKategori from '../views/Admin/KelolaKategori.vue'
 import KelolaProduk from '../views/Admin/KelolaProduk.vue'
+// 1. Import komponen KelolaTransaksi dari folder Admin
+import KelolaTransaksi from '../views/Admin/KelolaTransaksi.vue'
 
 const routes = [
   { path: '/', component: LandingPageView, name: 'landing-page' },
@@ -24,12 +25,12 @@ const routes = [
   { path: '/register', component: RegisterView, name: 'register' },
   
   // Grouping khusus Admin (Nested Routes)
-  { 
-    path: '/dashboard', component: DashboardView, meta: { requiresAuth: true } }, // Tandai halaman butuh login
-  { 
-    path: '/dashboard/categories', component: KelolaKategori, meta: { requiresAuth: true } },
-  { 
-    path: '/dashboard/products', component: KelolaProduk, meta: { requiresAuth: true } }
+  { path: '/dashboard', component: DashboardView, meta: { requiresAuth: true } },
+  { path: '/dashboard/categories', component: KelolaKategori, meta: { requiresAuth: true } },
+  { path: '/dashboard/products', component: KelolaProduk, meta: { requiresAuth: true } },
+  
+  // 2. Tambahkan route /dashboard/transaksi di sini
+  { path: '/dashboard/transaksi', component: KelolaTransaksi, meta: { requiresAuth: true } }
 ]
 
 const router = createRouter({

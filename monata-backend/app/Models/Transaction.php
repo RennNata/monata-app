@@ -11,7 +11,7 @@ class Transaction extends Model
         'id_user',
         'id_admin',
         'total_harga',
-        'tipe_transaksi',
+        'status_pembayaran',
         'status'
     ];
 

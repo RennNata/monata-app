@@ -106,7 +106,17 @@
 
             <div class="form-group">
               <label>Foto Produk (Opsional)</label>
-              <input type="file" @change="handleFileUpload" accept="image/*" />
+              <input 
+                ref="fileInputRef"
+                type="file" 
+                @change="handleFileUpload" 
+                accept="image/*" 
+              />
+              <!-- Preview Gambar -->
+              <div v-if="previewUrl" class="image-preview-container">
+                <p class="preview-label">Preview Foto:</p>
+                <img :src="previewUrl" alt="Preview Foto" class="image-preview" />
+              </div>
             </div>
 
             <div class="modal-actions">
@@ -123,12 +133,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, nextTick } from 'vue'
 import axios from 'axios'
 import Sidebar from '../../components/Sidebar.vue'
 
+const NGROK_URL = 'https://mayra-glaucous-cloudlessly.ngrok-free.dev'
+
 const api = axios.create({
-  baseURL: 'https://mayra-glaucous-cloudlessly.ngrok-free.dev/api',
+  baseURL: `${NGROK_URL}/api`,
   headers: {
     'Accept': 'application/json',
     'ngrok-skip-browser-warning': 'true'
@@ -151,6 +163,10 @@ const isModalOpen = ref(false)
 const isEditMode = ref(false)
 const selectedId = ref(null)
 
+// Ref untuk elemen file input & preview URL
+const fileInputRef = ref(null)
+const previewUrl = ref(null)
+
 const form = reactive({
   id_kategori: '',
   nama_produk: '',
@@ -158,6 +174,17 @@ const form = reactive({
   stok: '',
   foto: null
 })
+
+// Helper nampilin URL Foto (Cuma 1 di sini)
+const getFotoUrl = (fotoPath) => {
+  if (!fotoPath) return ''
+  if (typeof fotoPath !== 'string') return ''
+
+  if (fotoPath.startsWith('http://') || fotoPath.startsWith('https://')) return fotoPath
+  
+  const cleanPath = fotoPath.replace(/^\/?(storage\/)?/, '')
+  return `${NGROK_URL}/storage/${cleanPath}?ngrok-skip-browser-warning=true`
+}
 
 // Fetch data produk & data kategori buat dropdown
 const fetchData = async () => {
@@ -170,6 +197,8 @@ const fetchData = async () => {
     
     products.value = resProducts.data.data || resProducts.data
     categories.value = resCategories.data.data || resCategories.data
+
+    console.log('Data Produk:', products.value)
   } catch (error) {
     console.error('Error fetching data:', error)
     alert(error.response?.data?.message || 'Gagal ngambil data dari database!')
@@ -178,11 +207,12 @@ const fetchData = async () => {
   }
 }
 
-// Handling upload file foto
+// Handling upload file foto + Preview lokal
 const handleFileUpload = (event) => {
   const file = event.target.files[0]
   if (file) {
     form.foto = file
+    previewUrl.value = URL.createObjectURL(file)
   }
 }
 
@@ -200,7 +230,6 @@ const saveProduct = async () => {
     }
 
     if (isEditMode.value) {
-      // Laravel butuh _method = PUT kalau ngirim FormData lewat POST
       formData.append('_method', 'PUT')
       await api.post(`/dashboard/products/${selectedId.value}`, formData)
     } else {
@@ -227,15 +256,17 @@ const deleteProduct = async (id) => {
   }
 }
 
-const openModal = (mode, product = null) => {
+const openModal = async (mode, product = null) => {
   isEditMode.value = mode === 'edit'
+  
   if (mode === 'edit' && product) {
     selectedId.value = product.id
     form.id_kategori = product.id_kategori
     form.nama_produk = product.nama_produk
     form.harga = product.harga
     form.stok = product.stok
-    form.foto = null // foto diisi cuma kalau user mau ubah gambar
+    form.foto = null
+    previewUrl.value = product.foto ? getFotoUrl(product.foto) : null
   } else {
     selectedId.value = null
     form.id_kategori = ''
@@ -243,12 +274,24 @@ const openModal = (mode, product = null) => {
     form.harga = ''
     form.stok = ''
     form.foto = null
+    previewUrl.value = null
   }
+  
   isModalOpen.value = true
+
+  await nextTick()
+  if (fileInputRef.value) {
+    fileInputRef.value.value = ''
+  }
 }
 
 const closeModal = () => {
   isModalOpen.value = false
+  previewUrl.value = null
+  form.foto = null
+  if (fileInputRef.value) {
+    fileInputRef.value.value = ''
+  }
 }
 
 // Helper nampilin nama kategori di tabel
@@ -256,13 +299,6 @@ const getCategoryName = (categoryId, categoryObject) => {
   if (categoryObject?.nama_kategori) return categoryObject.nama_kategori
   const found = categories.value.find(c => c.id === categoryId)
   return found ? found.nama_kategori : '-'
-}
-
-// Helper nampilin URL Foto
-const getFotoUrl = (fotoPath) => {
-  if (!fotoPath) return ''
-  if (fotoPath.startsWith('http')) return fotoPath
-  return `https://mayra-glaucous-cloudlessly.ngrok-free.dev/storage/${fotoPath}`
 }
 
 onMounted(() => {
@@ -348,6 +384,7 @@ th, td {
   height: 48px;
   object-fit: cover;
   border-radius: 6px;
+  border: 1px solid #334155;
 }
 
 .empty-state {
@@ -458,6 +495,8 @@ th, td {
   padding: 24px;
   width: 100%;
   max-width: 450px;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
 }
 
@@ -495,6 +534,28 @@ th, td {
 .form-group textarea:focus {
   outline: 2px solid #3b82f6;
   border-color: transparent;
+}
+
+.image-preview-container {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #0f172a;
+  border: 1px dashed #334155;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.preview-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+
+.image-preview {
+  max-width: 100%;
+  max-height: 140px;
+  object-fit: contain;
+  border-radius: 6px;
 }
 
 .modal-actions {

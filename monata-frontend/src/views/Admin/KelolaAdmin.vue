@@ -5,11 +5,11 @@
     <main class="main-content">
       <div class="page-header">
         <div>
-          <h2>Kelola Produk</h2>
-          <p>Atur semua produk, stok, harga, dan kategorinya di sini.</p>
+          <h2>Kelola Admin</h2>
+          <p>Atur data akun admin dan super admin di sini.</p>
         </div>
         <button class="btn-primary" @click="openModal('add')">
-          <span>+</span> Tambah Produk
+          <span>+</span> Tambah Admin
         </button>
       </div>
 
@@ -18,40 +18,30 @@
           <thead>
             <tr>
               <th>No</th>
-              <th>Foto</th>
-              <th>Nama Produk</th>
-              <th>Kategori</th>
-              <th>Harga</th>
-              <th>Stok</th>
+              <th>Nama Admin</th>
+              <th>NIS / NIP</th>
+              <th>Role</th>
               <th>Aksi</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="isLoading">
-              <td colspan="7" class="empty-state">Lagi ngambil data produk... Sabar ya!</td>
+              <td colspan="5" class="empty-state">Lagi ngambil data admin... Sabar ya!</td>
             </tr>
-            <tr v-else-if="products.length === 0">
-              <td colspan="7" class="empty-state">Belum ada data produk. Tambahin dulu yuk!</td>
+            <tr v-else-if="admins.length === 0">
+              <td colspan="5" class="empty-state">Belum ada data admin. Tambahin dulu yuk!</td>
             </tr>
-            <tr v-else v-for="(prod, index) in products" :key="prod.id">
+            <tr v-else v-for="(admin, index) in admins" :key="admin.id">
               <td>#{{ index + 1 }}</td>
+              <td class="font-bold">{{ admin.name }}</td>
+              <td>{{ admin.nis_nip }}</td>
               <td>
-                <img 
-                  v-if="prod.foto" 
-                  :src="getFotoUrl(prod.foto)" 
-                  alt="Foto Produk" 
-                  class="img-thumbnail" 
-                />
-                <span v-else class="empty-text">-</span>
+                <span class="badge-role" :class="admin.role">{{ admin.role }}</span>
               </td>
-              <td class="font-bold">{{ prod.nama_produk }}</td>
-              <td>{{ getCategoryName(prod.id_kategori, prod.category) }}</td>
-              <td>Rp {{ Number(prod.harga).toLocaleString('id-ID') }}</td>
-              <td>{{ prod.stok }}</td>
               <td>
                 <div class="action-buttons">
-                  <button class="btn-edit" @click="openModal('edit', prod)">Edit</button>
-                  <button class="btn-delete" @click="deleteProduct(prod.id)">Hapus</button>
+                  <button class="btn-edit" @click="openModal('edit', admin)">Edit</button>
+                  <button class="btn-delete" @click="deleteAdmin(admin.id)">Hapus</button>
                 </div>
               </td>
             </tr>
@@ -59,60 +49,53 @@
         </table>
       </div>
 
-      <!-- Modal Tambah/Edit Produk -->
+      <!-- Modal Tambah/Edit Admin -->
       <div v-if="isModalOpen" class="modal-overlay" @click.self="closeModal">
         <div class="modal-box">
-          <h3>{{ isEditMode ? 'Edit Produk' : 'Tambah Produk Baru' }}</h3>
-          <form @submit.prevent="saveProduct">
+          <h3>{{ isEditMode ? 'Edit Admin' : 'Tambah Admin Baru' }}</h3>
+          <form @submit.prevent="saveAdmin">
             <div class="form-group">
-              <label>Nama Produk</label>
+              <label>Nama Admin</label>
               <input 
-                v-model="form.nama_produk" 
+                v-model="form.name" 
                 type="text" 
-                placeholder="Contoh: Seragam SD Lengan Pendek" 
+                placeholder="Contoh: Budi Santoso" 
                 required 
               />
             </div>
 
             <div class="form-group">
-              <label>Kategori</label>
-              <select v-model="form.id_kategori" required>
-                <option value="" disabled>-- Pilih Kategori --</option>
-                <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                  {{ cat.nama_kategori }}
-                </option>
+              <label>NIS / NIP</label>
+              <input 
+                v-model="form.nis_nip" 
+                type="text" 
+                placeholder="Contoh: 198203152008011002" 
+                required 
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Password {{ isEditMode ? '(Kosongkan jika tak diubah)' : '' }}</label>
+              <input 
+                v-model="form.password" 
+                type="password" 
+                :placeholder="isEditMode ? '••••••••' : 'Masukkan password'" 
+                :required="!isEditMode" 
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Role</label>
+              <select v-model="form.role" required>
+                <option value="admin">Admin</option>
+                <option value="super_admin">Super Admin</option>
               </select>
-            </div>
-
-            <div class="form-group">
-              <label>Harga (Rp)</label>
-              <input 
-                v-model="form.harga" 
-                type="number" 
-                placeholder="Contoh: 75000" 
-                required 
-              />
-            </div>
-
-            <div class="form-group">
-              <label>Stok</label>
-              <input 
-                v-model="form.stok" 
-                type="number" 
-                placeholder="Contoh: 50" 
-                required 
-              />
-            </div>
-
-            <div class="form-group">
-              <label>Foto Produk (Opsional)</label>
-              <input type="file" @change="handleFileUpload" accept="image/*" />
             </div>
 
             <div class="modal-actions">
               <button type="button" class="btn-cancel" @click="closeModal">Batal</button>
               <button type="submit" class="btn-primary" :disabled="isSaving">
-                {{ isSaving ? 'Ngesave...' : (isEditMode ? 'Simpan Perubahan' : 'Tambah Produk') }}
+                {{ isSaving ? 'Ngesave...' : (isEditMode ? 'Simpan Perubahan' : 'Tambah Admin') }}
               </button>
             </div>
           </form>
@@ -143,8 +126,7 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-const products = ref([])
-const categories = ref([])
+const admins = ref([])
 const isLoading = ref(false)
 const isSaving = ref(false)
 const isModalOpen = ref(false)
@@ -152,97 +134,78 @@ const isEditMode = ref(false)
 const selectedId = ref(null)
 
 const form = reactive({
-  id_kategori: '',
-  nama_produk: '',
-  harga: '',
-  stok: '',
-  foto: null
+  name: '',
+  nis_nip: '',
+  password: '',
+  role: 'admin'
 })
 
-// Fetch data produk & data kategori buat dropdown
-const fetchData = async () => {
+const fetchAdmins = async () => {
   isLoading.value = true
   try {
-    const [resProducts, resCategories] = await Promise.all([
-      api.get('/dashboard/products'),
-      api.get('/dashboard/categories')
-    ])
-    
-    products.value = resProducts.data.data || resProducts.data
-    categories.value = resCategories.data.data || resCategories.data
+    const res = await api.get('/dashboard/admins')
+    admins.value = res.data.data || res.data
   } catch (error) {
-    console.error('Error fetching data:', error)
-    alert(error.response?.data?.message || 'Gagal ngambil data dari database!')
+    console.error('Error fetching admins:', error)
+    alert(error.response?.data?.message || 'Gagal ngambil data admin!')
   } finally {
     isLoading.value = false
   }
 }
 
-// Handling upload file foto
-const handleFileUpload = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    form.foto = file
-  }
-}
-
-const saveProduct = async () => {
+const saveAdmin = async () => {
   isSaving.value = true
   try {
-    const formData = new FormData()
-    formData.append('id_kategori', form.id_kategori)
-    formData.append('nama_produk', form.nama_produk)
-    formData.append('harga', form.harga)
-    formData.append('stok', form.stok)
-    
-    if (form.foto instanceof File) {
-      formData.append('foto', form.foto)
+    const payload = {
+      name: form.name,
+      nis_nip: form.nis_nip,
+      role: form.role
+    }
+
+    if (form.password) {
+      payload.password = form.password
     }
 
     if (isEditMode.value) {
-      // Laravel butuh _method = PUT kalau ngirim FormData lewat POST
-      formData.append('_method', 'PUT')
-      await api.post(`/dashboard/products/${selectedId.value}`, formData)
+      await api.put(`/dashboard/admins/${selectedId.value}`, payload)
     } else {
-      await api.post('/dashboard/products', formData)
+      await api.post('/dashboard/admins', payload)
     }
     
-    await fetchData()
+    await fetchAdmins()
     closeModal()
   } catch (error) {
-    alert(error.response?.data?.message || 'Gagal menyimpan data produk!')
+    alert(error.response?.data?.message || 'Gagal menyimpan data admin!')
   } finally {
     isSaving.value = false
   }
 }
 
-const deleteProduct = async (id) => {
-  if (!confirm('Yakin mau hapus produk ini? Data bakal hilang permanen!')) return
+const deleteAdmin = async (id) => {
+  if (!confirm('Yakin mau hapus admin ini?')) return
 
   try {
-    await api.delete(`/dashboard/products/${id}`)
-    await fetchData()
+    await api.delete(`/dashboard/admins/${id}`)
+    await fetchAdmins()
   } catch (error) {
     alert(error.response?.data?.message || 'Gagal ngehapus data!')
   }
 }
 
-const openModal = (mode, product = null) => {
+const openModal = (mode, admin = null) => {
   isEditMode.value = mode === 'edit'
-  if (mode === 'edit' && product) {
-    selectedId.value = product.id
-    form.id_kategori = product.id_kategori
-    form.nama_produk = product.nama_produk
-    form.harga = product.harga
-    form.stok = product.stok
-    form.foto = null // foto diisi cuma kalau user mau ubah gambar
+  if (mode === 'edit' && admin) {
+    selectedId.value = admin.id
+    form.name = admin.name
+    form.nis_nip = admin.nis_nip
+    form.password = ''
+    form.role = admin.role || 'admin'
   } else {
     selectedId.value = null
-    form.id_kategori = ''
-    form.nama_produk = ''
-    form.harga = ''
-    form.stok = ''
-    form.foto = null
+    form.name = ''
+    form.nis_nip = ''
+    form.password = ''
+    form.role = 'admin'
   }
   isModalOpen.value = true
 }
@@ -251,22 +214,8 @@ const closeModal = () => {
   isModalOpen.value = false
 }
 
-// Helper nampilin nama kategori di tabel
-const getCategoryName = (categoryId, categoryObject) => {
-  if (categoryObject?.nama_kategori) return categoryObject.nama_kategori
-  const found = categories.value.find(c => c.id === categoryId)
-  return found ? found.nama_kategori : '-'
-}
-
-// Helper nampilin URL Foto
-const getFotoUrl = (fotoPath) => {
-  if (!fotoPath) return ''
-  if (fotoPath.startsWith('http')) return fotoPath
-  return `https://mayra-glaucous-cloudlessly.ngrok-free.dev/storage/${fotoPath}`
-}
-
 onMounted(() => {
-  fetchData()
+  fetchAdmins()
 })
 </script>
 
@@ -343,26 +292,35 @@ th, td {
   background-color: #243248;
 }
 
-.img-thumbnail {
-  width: 48px;
-  height: 48px;
-  object-fit: cover;
-  border-radius: 6px;
-}
-
 .empty-state {
   text-align: center;
   padding: 32px;
   color: #64748b;
 }
 
-.empty-text {
-  color: #64748b;
-}
-
 .font-bold {
   font-weight: 600;
   color: #f8fafc;
+}
+
+.badge-role {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-role.super_admin {
+  background-color: rgba(236, 72, 153, 0.2);
+  color: #f472b6;
+  border: 1px solid rgba(236, 72, 153, 0.4);
+}
+
+.badge-role.admin {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.4);
 }
 
 .btn-primary {
@@ -479,8 +437,7 @@ th, td {
 }
 
 .form-group input,
-.form-group select,
-.form-group textarea {
+.form-group select {
   width: 100%;
   padding: 10px 12px;
   background-color: #0f172a;
@@ -491,8 +448,7 @@ th, td {
 }
 
 .form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.form-group select:focus {
   outline: 2px solid #3b82f6;
   border-color: transparent;
 }

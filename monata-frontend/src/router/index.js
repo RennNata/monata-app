@@ -15,8 +15,8 @@ import DashboardView from '../views/Admin/DashboardView.vue'
 
 import KelolaKategori from '../views/Admin/KelolaKategori.vue'
 import KelolaProduk from '../views/Admin/KelolaProduk.vue'
-// 1. Import komponen KelolaTransaksi dari folder Admin
 import KelolaTransaksi from '../views/Admin/KelolaTransaksi.vue'
+import KelolaAdmin from '../views/Admin/KelolaAdmin.vue'
 
 const routes = [
   { path: '/', component: LandingPageView, name: 'landing-page' },
@@ -28,7 +28,7 @@ const routes = [
   { path: '/dashboard', component: DashboardView, meta: { requiresAuth: true } },
   { path: '/dashboard/categories', component: KelolaKategori, meta: { requiresAuth: true } },
   { path: '/dashboard/products', component: KelolaProduk, meta: { requiresAuth: true } },
-  
+  { path: '/dashboard/admins', component: KelolaAdmin, meta: { requiresAuth: true } },
   // 2. Tambahkan route /dashboard/transaksi di sini
   { path: '/dashboard/transaksi', component: KelolaTransaksi, meta: { requiresAuth: true } }
 ]

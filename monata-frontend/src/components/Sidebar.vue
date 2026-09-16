@@ -31,7 +31,7 @@
 
         <div class="menu-divider"></div>
 
-        <router-link to="/dashboard /kelola-admin" class="nav-item" active-class="active">
+        <router-link to="/dashboard/admins" class="nav-item" active-class="active">
           <span class="icon">👤</span>
           <span>Kelola Admin</span>
         </router-link>

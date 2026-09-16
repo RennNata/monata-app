@@ -127,8 +127,11 @@ const handleLogin = async () => {
 
     console.log("Token berhasil kesimpen:", localStorage.getItem("token"));
 
-    // Pindah ke dashboard
-    router.push("/dashboard");
+    if (user.role === "admin" || user.role === "super_admin") {
+      router.push("/dashboard");
+    } else {
+      router.push("/home");
+    }
   } catch (error) {
     console.error("Error Login:", error);
     errorMessage.value =

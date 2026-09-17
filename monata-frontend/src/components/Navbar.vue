@@ -16,7 +16,7 @@ const handleSearch = () => {
   <nav class="navbar">
     <!-- Logo SMK Assalaam -->
     <div class="nav-brand">
-      <router-link to="/">
+      <router-link to="/home">
         <img src="../assets/logos/logo-smkassalaam.png" alt="Logo SMK Assalaam" class="logo" />
       </router-link>
     </div>

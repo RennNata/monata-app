@@ -1,14 +1,36 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 import Navbar from '../../components/Navbar.vue'
 import Assalaam from '../../assets/logos/assalaam.png'
 import Assalaam1 from '../../assets/logos/assalaam1.png'
+
+const NGROK_URL = 'https://mayra-glaucous-cloudlessly.ngrok-free.dev'
+
+const api = axios.create({
+  baseURL: `${NGROK_URL}/api`,
+  headers: {
+    'Accept': 'application/json',
+    'ngrok-skip-browser-warning': 'true'
+  }
+})
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
 
 const router = useRouter()
 const images = [Assalaam, Assalaam1]
 const currentImageIndex = ref(0)
 let timer = null
+
+const categories = ref([])
+const isLoadingCategories = ref(false)
 
 const startTimer = () => {
   timer = setInterval(() => {
@@ -22,12 +44,38 @@ const setImage = (index) => {
   startTimer()
 }
 
-const navigateToCategory = (catName) => {
-  router.push({ path: '/katalog', query: { category: catName } })
+// Fetch Kategori Asli dari Database
+const fetchCategories = async () => {
+  isLoadingCategories.value = true
+  try {
+    const res = await api.get('/categories')
+    categories.value = res.data.data || res.data || []
+  } catch (error) {
+    console.error('Gagal mengambil data kategori:', error)
+  } finally {
+    isLoadingCategories.value = false
+  }
+}
+
+// Navigasi ke katalog sambil ngirim ID Kategori
+const navigateToCategory = (cat) => {
+  router.push({ path: '/katalog', query: { category: cat.id } })
+}
+
+// Helper Ikon berdasarkan nama kategori
+const getCategoryIcon = (nama) => {
+  if (!nama) return '📦'
+  const lower = nama.toLowerCase()
+  if (lower.includes('seragam')) return '👔'
+  if (lower.includes('buku') || lower.includes('tulis')) return '📚'
+  if (lower.includes('atribut')) return '🏷️'
+  if (lower.includes('sepatu') || lower.includes('kaos kaki')) return '🧦'
+  return '📦'
 }
 
 onMounted(() => {
   startTimer()
+  fetchCategories()
 })
 
 onUnmounted(() => {
@@ -69,28 +117,35 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <!-- Kategori Populer -->
+    <!-- Kategori Populer Dinamis dari Database -->
     <section class="section categories-section">
       <div class="section-header">
         <h2 class="section-title">Kategori Populer</h2>
         <p class="section-subtitle">Pilih kategori barang yang kamu butuhkan</p>
       </div>
-      <div class="grid-categories">
-        <div class="category-card" @click="navigateToCategory('Seragam')">
-          <div class="icon-wrapper">👔</div>
-          <h3>Seragam</h3>
+
+      <!-- Loading State -->
+      <div v-if="isLoadingCategories" class="loading-state">
+        <p>Memuat kategori...</p>
+      </div>
+
+      <!-- Grid Kategori Asli -->
+      <div v-else-if="categories.length > 0" class="grid-categories">
+        <div 
+          v-for="cat in categories" 
+          :key="cat.id" 
+          class="category-card" 
+          @click="navigateToCategory(cat)"
+        >
+          <div class="icon-wrapper">{{ getCategoryIcon(cat.nama_kategori) }}</div>
+          <h3>{{ cat.nama_kategori }}</h3>
           <span class="card-link">Lihat Produk →</span>
         </div>
-        <div class="category-card" @click="navigateToCategory('Buku & Alat Tulis')">
-          <div class="icon-wrapper">📚</div>
-          <h3>Buku & Alat Tulis</h3>
-          <span class="card-link">Lihat Produk →</span>
-        </div>
-        <div class="category-card" @click="navigateToCategory('Atribut Sekolah')">
-          <div class="icon-wrapper">🏷️</div>
-          <h3>Atribut Sekolah</h3>
-          <span class="card-link">Lihat Produk →</span>
-        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else class="empty-state">
+        <p>Belum ada kategori yang tersedia.</p>
       </div>
     </section>
 
@@ -245,6 +300,12 @@ onUnmounted(() => {
   color: #94a3b8;
   font-size: 0.95rem;
   margin: 0;
+}
+
+.loading-state, .empty-state {
+  text-align: center;
+  color: #94a3b8;
+  padding: 20px;
 }
 
 /* Categories Grid */

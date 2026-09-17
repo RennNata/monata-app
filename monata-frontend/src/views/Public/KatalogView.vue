@@ -1,59 +1,3 @@
-<script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import Navbar from '../../components/Navbar.vue'
-
-const route = useRoute()
-const selectedCategory = ref('Semua')
-const searchQuery = ref('')
-
-// Dummy Data Produk SMK Assalaam
-const products = ref([
-  { id: 1, name: 'Seragam OSIS SMK (Lengan Pendek)', category: 'Seragam', price: 95000, icon: '👔', stock: 15 },
-  { id: 2, name: 'Seragam Batik Assalaam', category: 'Seragam', price: 110000, icon: '👕', stock: 8 },
-  { id: 3, name: 'Celana / Rok Abu-Abu', category: 'Seragam', price: 100000, icon: '👖', stock: 20 },
-  { id: 4, name: 'Buku Tulis A5 (Isi 10 Pack)', category: 'Buku & Alat Tulis', price: 45000, icon: '📚', stock: 50 },
-  { id: 5, name: 'Pulpen Gel Black 0.5mm (Box)', category: 'Buku & Alat Tulis', price: 25000, icon: '✏️', stock: 30 },
-  { id: 6, name: 'Buku Gambar A3', category: 'Buku & Alat Tulis', price: 15000, icon: '🎨', stock: 12 },
-  { id: 7, name: 'Dasi SMK Assalaam', category: 'Atribut Sekolah', price: 20000, icon: '👔', stock: 40 },
-  { id: 8, name: 'Sabuk Logo SMK Assalaam', category: 'Atribut Sekolah', price: 25000, icon: '🏷️', stock: 25 },
-  { id: 9, name: 'Kaos Kaki Hitam (3 Pasang)', category: 'Atribut Sekolah', price: 30000, icon: '🧦', stock: 18 }
-])
-
-const categories = ['Semua', 'Seragam', 'Buku & Alat Tulis', 'Atribut Sekolah']
-
-// Sync filter dari Query URL (dari Navbar / Home)
-const syncQueryParams = () => {
-  if (route.query.search) {
-    searchQuery.value = route.query.search
-  }
-  if (route.query.category) {
-    selectedCategory.value = route.query.category
-  }
-}
-
-watch(() => route.query, () => {
-  syncQueryParams()
-}, { deep: true })
-
-onMounted(() => {
-  syncQueryParams()
-})
-
-// Filter logic
-const filteredProducts = computed(() => {
-  return products.value.filter(product => {
-    const matchCategory = selectedCategory.value === 'Semua' || product.category === selectedCategory.value
-    const matchSearch = product.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    return matchCategory && matchSearch
-  })
-})
-
-const formatRupiah = (number) => {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number)
-}
-</script>
-
 <template>
   <div class="katalog-page">
     <Navbar />
@@ -67,15 +11,23 @@ const formatRupiah = (number) => {
 
       <!-- Filter Bar -->
       <div class="filter-container">
+        <!-- Dynamic Category Pills -->
         <div class="category-pills">
           <button 
-            v-for="cat in categories" 
-            :key="cat"
             class="pill-btn"
-            :class="{ active: selectedCategory === cat }"
-            @click="selectedCategory = cat"
+            :class="{ active: selectedCategory === 'Semua' }"
+            @click="selectedCategory = 'Semua'"
           >
-            {{ cat }}
+            Semua
+          </button>
+          <button 
+            v-for="cat in categories" 
+            :key="cat.id"
+            class="pill-btn"
+            :class="{ active: selectedCategory == cat.id || selectedCategory === cat.nama_kategori }"
+            @click="selectedCategory = cat.id"
+          >
+            {{ cat.nama_kategori }}
           </button>
         </div>
 
@@ -90,21 +42,32 @@ const formatRupiah = (number) => {
         </div>
       </div>
 
-      <!-- Grid Produk -->
-      <div v-if="filteredProducts.length > 0" class="product-grid">
+      <!-- Loading State -->
+      <div v-if="isLoading" class="loading-state">
+        <p>Sedang memuat katalog produk...</p>
+      </div>
+
+      <!-- Grid Produk Asli dari Database -->
+      <div v-else-if="filteredProducts.length > 0" class="product-grid">
         <div v-for="item in filteredProducts" :key="item.id" class="product-card">
           <div class="product-image">
-            <span class="product-icon">{{ item.icon }}</span>
-            <span class="category-tag">{{ item.category }}</span>
+            <img 
+              v-if="item.foto" 
+              :src="getFotoUrl(item.foto)" 
+              :alt="item.nama_produk" 
+              class="real-product-img" 
+            />
+            <span v-else class="product-icon">📦</span>
+            <span class="category-tag">{{ getCategoryName(item) }}</span>
           </div>
           <div class="product-info">
-            <h3 class="product-title">{{ item.name }}</h3>
+            <h3 class="product-title">{{ item.nama_produk }}</h3>
             <div class="product-meta">
-              <span class="price">{{ formatRupiah(item.price) }}</span>
-              <span class="stock">Stok: {{ item.stock }}</span>
+              <span class="price">{{ formatRupiah(item.harga) }}</span>
+              <span class="stock">Stok: {{ item.stok }}</span>
             </div>
-            <button class="btn-buy">
-              + Tambah Pesanan
+            <button class="btn-buy" :disabled="item.stok <= 0">
+              {{ item.stok > 0 ? '+ Tambah Pesanan' : 'Stok Habis' }}
             </button>
           </div>
         </div>
@@ -120,6 +83,112 @@ const formatRupiah = (number) => {
     </main>
   </div>
 </template>
+
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import axios from 'axios'
+import Navbar from '../../components/Navbar.vue'
+
+const NGROK_URL = 'https://mayra-glaucous-cloudlessly.ngrok-free.dev'
+
+const api = axios.create({
+  baseURL: `${NGROK_URL}/api`,
+  headers: {
+    'Accept': 'application/json',
+    'ngrok-skip-browser-warning': 'true'
+  }
+})
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+const route = useRoute()
+const selectedCategory = ref('Semua')
+const searchQuery = ref('')
+const products = ref([])
+const categories = ref([])
+const isLoading = ref(false)
+
+// Helper foto Ngrok
+const getFotoUrl = (fotoPath) => {
+  if (!fotoPath) return ''
+  if (typeof fotoPath !== 'string') return ''
+  if (fotoPath.startsWith('http://') || fotoPath.startsWith('https://')) return fotoPath
+  
+  const cleanPath = fotoPath.replace(/^\/?(public\/|storage\/)?/, '')
+  return `${NGROK_URL}/storage/${cleanPath}?ngrok-skip-browser-warning=true`
+}
+
+// Fetch Data Asli dari Backend Laravel
+const fetchData = async () => {
+  isLoading.value = true
+  try {
+    const [resProducts, resCategories] = await Promise.all([
+      api.get('/products'),
+      api.get('/categories')
+    ])
+    
+    products.value = resProducts.data.data || resProducts.data || []
+    categories.value = resCategories.data.data || resCategories.data || []
+  } catch (error) {
+    console.error('Gagal mengambil data katalog:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Helper Nama Kategori
+const getCategoryName = (product) => {
+  if (product.category?.nama_kategori) return product.category.nama_kategori
+  const found = categories.value.find(c => c.id === product.id_kategori)
+  return found ? found.nama_kategori : 'Umum'
+}
+
+// Sync query URL
+const syncQueryParams = () => {
+  if (route.query.search) {
+    searchQuery.value = route.query.search
+  }
+  if (route.query.category) {
+    selectedCategory.value = route.query.category
+  }
+}
+
+watch(() => route.query, () => {
+  syncQueryParams()
+}, { deep: true })
+
+onMounted(() => {
+  syncQueryParams()
+  fetchData()
+})
+
+// Filter logic untuk data DB
+const filteredProducts = computed(() => {
+  return products.value.filter(product => {
+    // Check Kategori ID atau Kategori Name
+    const matchCategory = selectedCategory.value === 'Semua' || 
+                          product.id_kategori == selectedCategory.value || 
+                          getCategoryName(product) === selectedCategory.value
+
+    // Check Nama Produk
+    const productName = product.nama_produk || product.name || ''
+    const matchSearch = productName.toLowerCase().includes(searchQuery.value.toLowerCase())
+
+    return matchCategory && matchSearch
+  })
+})
+
+const formatRupiah = (number) => {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number || 0)
+}
+</script>
 
 <style scoped>
 .katalog-page {
@@ -224,6 +293,13 @@ const formatRupiah = (number) => {
   cursor: pointer;
 }
 
+/* Loading State */
+.loading-state {
+  text-align: center;
+  padding: 60px;
+  color: #94a3b8;
+}
+
 /* Product Grid */
 .product-grid {
   display: grid;
@@ -248,13 +324,20 @@ const formatRupiah = (number) => {
 }
 
 .product-image {
-  height: 160px;
+  height: 180px;
   background-color: #0f172a;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
   border-bottom: 1px solid #334155;
+  overflow: hidden;
+}
+
+.real-product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .product-icon {
@@ -265,7 +348,7 @@ const formatRupiah = (number) => {
   position: absolute;
   top: 12px;
   left: 12px;
-  background-color: rgba(30, 41, 59, 0.85);
+  background-color: rgba(15, 23, 42, 0.85);
   border: 1px solid #334155;
   color: #38bdf8;
   font-size: 11px;
@@ -322,9 +405,16 @@ const formatRupiah = (number) => {
   transition: all 0.2s ease;
 }
 
-.btn-buy:hover {
+.btn-buy:hover:not(:disabled) {
   background-color: #38bdf8;
   color: #0f172a;
+}
+
+.btn-buy:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #475569;
+  color: #94a3b8;
 }
 
 /* Empty State */

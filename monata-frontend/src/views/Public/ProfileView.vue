@@ -25,13 +25,20 @@ const fetchProfile = async () => {
     }
 
     // GANTI URL INI sesuai endpoint API Laravel/Express lu!
-    const response = await axios.get('http://localhost:8000/api/user', {
+    const api = axios.create({
+  baseURL: 'https://mayra-glaucous-cloudlessly.ngrok-free.dev/api',
+  headers: {
+    'Accept': 'application/json',
+    'ngrok-skip-browser-warning': 'true'
+  }
+})
+
+    // Masukin data dari backend (handle response struktur standar)
+    const response = await api.get('/user', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     })
-
-    // Masukin data dari backend (handle response struktur standar)
     const userData = response.data.user || response.data.data || response.data
     user.value = userData
 

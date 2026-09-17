@@ -5,6 +5,7 @@ import LandingPageView from '../views/LandingPageView.vue'
 // Public
 import HomeView from '../views/Public/HomeView.vue'
 import KatalogView from '../views/Public/KatalogView.vue'
+import ProfileView from '../views/Public/ProfileView.vue'
 
 // Auth
 import LoginView from '../views/Auth/LoginView.vue'
@@ -24,6 +25,7 @@ const routes = [
   { path: '/login', component: LoginView, name: 'login' },
   { path: '/register', component: RegisterView, name: 'register' },
   { path: '/katalog', component: KatalogView, name: 'katalog' },
+  { path: '/profile', component: ProfileView, name: 'profile' },
 
   // admin
   { path: '/dashboard', component: DashboardView, meta: { requiresAuth: true, roles: ['admin', 'super_admin'] } },

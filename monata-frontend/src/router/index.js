@@ -6,6 +6,7 @@ import LandingPageView from '../views/LandingPageView.vue'
 import HomeView from '../views/Public/HomeView.vue'
 import KatalogView from '../views/Public/KatalogView.vue'
 import ProfileView from '../views/Public/ProfileView.vue'
+import BuatPesananView from '../views/Public/BuatPesananView.vue'
 
 // Auth
 import LoginView from '../views/Auth/LoginView.vue'
@@ -26,6 +27,7 @@ const routes = [
   { path: '/register', component: RegisterView, name: 'register' },
   { path: '/katalog', component: KatalogView, name: 'katalog' },
   { path: '/profile', component: ProfileView, name: 'profile' },
+  { path: '/buat-pesanan', component: BuatPesananView, name: 'buat-pesanan' },
 
   // admin
   { path: '/dashboard', component: DashboardView, meta: { requiresAuth: true, roles: ['admin', 'super_admin'] } },

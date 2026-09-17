@@ -44,6 +44,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         
         Route::get('/transactions', [TransactionController::class, 'index']);
         Route::get('/transactions/{id}', [TransactionController::class, 'show']);
+        Route::delete('/transactions/{id}', [TransactionController::class, 'destroy']);
         Route::patch('/transactions/{id}/status', [TransactionController::class, 'updateStatus']);
         
         // --- super admin ---

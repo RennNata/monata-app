@@ -66,7 +66,7 @@
               <span class="price">{{ formatRupiah(item.harga) }}</span>
               <span class="stock">Stok: {{ item.stok }}</span>
             </div>
-            <button class="btn-buy" :disabled="item.stok <= 0">
+            <button class="btn-buy" :disabled="item.stok <= 0" @click="handleOrder(item)">
               {{ item.stok > 0 ? '+ Tambah Pesanan' : 'Stok Habis' }}
             </button>
           </div>
@@ -86,7 +86,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router' // <-- DIBENERIN: 'vue-router' bukan 'vue-route'
 import axios from 'axios'
 import Navbar from '../../components/Navbar.vue'
 
@@ -109,6 +109,7 @@ api.interceptors.request.use((config) => {
 })
 
 const route = useRoute()
+const router = useRouter()
 const selectedCategory = ref('Semua')
 const searchQuery = ref('')
 const products = ref([])
@@ -187,6 +188,24 @@ const filteredProducts = computed(() => {
 
 const formatRupiah = (number) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number || 0)
+}
+
+// DIBENERIN: Data lemparan disesuaiin lengkap buat BuatPesananView
+const handleOrder = (product) => {
+  if (product.stok <= 0) {
+    alert('Stok habis, gak bisa bikin pesanan!')
+    return
+  }
+  router.push({
+    path: '/buat-pesanan',
+    query: {
+      productId: product.id,
+      productName: product.nama_produk,
+      productPrice: product.harga,
+      productIcon: product.foto ? getFotoUrl(product.foto) : '📦',
+      productStock: product.stok
+    }
+  })
 }
 </script>
 

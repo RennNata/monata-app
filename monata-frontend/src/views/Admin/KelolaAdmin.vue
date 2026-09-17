@@ -32,7 +32,7 @@
               <td colspan="5" class="empty-state">Belum ada data admin. Tambahin dulu yuk!</td>
             </tr>
             <tr v-else v-for="(admin, index) in admins" :key="admin.id">
-              <td>#{{ index + 1 }}</td>
+              <td>{{ index + 1 }}</td>
               <td class="font-bold">{{ admin.name }}</td>
               <td>{{ admin.nis_nip }}</td>
               <td>

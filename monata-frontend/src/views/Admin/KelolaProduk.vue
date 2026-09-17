@@ -28,13 +28,13 @@
           </thead>
           <tbody>
             <tr v-if="isLoading">
-              <td colspan="7" class="empty-state">Lagi ngambil data produk... Sabar ya!</td>
+              <td colspan="7" class="empty-state">Lagi ngambil data produk...</td>
             </tr>
             <tr v-else-if="products.length === 0">
-              <td colspan="7" class="empty-state">Belum ada data produk. Tambahin dulu yuk!</td>
+              <td colspan="7" class="empty-state">Belum ada data produk.</td>
             </tr>
             <tr v-else v-for="(prod, index) in products" :key="prod.id">
-              <td>#{{ index + 1 }}</td>
+              <td>{{ index + 1 }}</td>
               <td>
                 <img 
                   v-if="prod.foto" 

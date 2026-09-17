@@ -6,7 +6,7 @@
       <div class="page-header">
         <div>
           <h2>Kelola Kategori</h2>
-          <p>Atur dan rapihin semua kategori produk toko lu di sini.</p>
+          <p>Atur dan rapihin semua kategori produk toko mu di sini.</p>
         </div>
         <button class="btn-primary" @click="openModal('add')">
           <span>+</span> Tambah Kategori
@@ -24,13 +24,13 @@
           </thead>
           <tbody>
             <tr v-if="isLoading">
-              <td colspan="5" class="empty-state">Lagi ngambil data dari server... Sabar!</td>
+              <td colspan="5" class="empty-state">Lagi ngambil data dari server...</td>
             </tr>
             <tr v-else-if="categories.length === 0">
-              <td colspan="5" class="empty-state">Belum ada data kategori. Sepi amat!</td>
+              <td colspan="5" class="empty-state">Belum ada data kategori.</td>
             </tr>
             <tr v-else v-for="(cat, index) in categories" :key="cat.id">
-              <td>#{{ index + 1 }}</td>
+              <td>{{ index + 1 }}</td>
               <td class="font-bold">{{ cat.nama_kategori }}</td>
               <td>
                 <div class="action-buttons">

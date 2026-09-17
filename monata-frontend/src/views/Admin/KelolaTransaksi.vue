@@ -29,17 +29,17 @@
           <tbody>
             <!-- Loading State -->
             <tr v-if="isLoading">
-              <td colspan="7" class="empty-state">Lagi ngambil data transaksi... Sabar ya!</td>
+              <td colspan="7" class="empty-state">Lagi ngambil data transaksi...</td>
             </tr>
 
             <!-- Empty State -->
             <tr v-else-if="transactions.length === 0">
-              <td colspan="7" class="empty-state">Belum ada data transaksi. Tambahin transaksi baru dulu yuk!</td>
+              <td colspan="7" class="empty-state">Belum ada transaksi masuk.</td>
             </tr>
 
             <!-- Data List -->
             <tr v-else v-for="(item, index) in transactions" :key="item.id || index">
-              <td>#{{ index + 1 }}</td>
+              <td>{{ index + 1 }}</td>
               <td class="font-mono text-blue">{{ item.kode_transaksi || '-' }}</td>
               <td class="font-bold">
                 {{ item.user?.name || item.user?.nama || (item.id_user ? 'User #' + item.id_user : 'Pelanggan Umum') }}
@@ -64,7 +64,7 @@
                 <div class="action-buttons">
                   <button class="btn-detail" @click="openDetailModal(item)">Detail</button>
                   <button class="btn-edit" @click="openModal('edit', item)">Edit</button>
-                  <button class="btn-delete" @click="deleteTransaction(item.id)">Hapus</button>
+                  <!-- <button class="btn-delete" @click="deleteTransaction(item.id)">Hapus</button> -->
                 </div>
               </td>
             </tr>
@@ -134,7 +134,7 @@
           </div>
 
           <div class="modal-footer-flex">
-            <div class="quick-status">
+            <!-- <div class="quick-status">
               <label>Ubah Status:</label>
               <select 
                 :value="detailItem?.status" 
@@ -144,7 +144,7 @@
                 <option value="selesai">Selesai</option>
                 <option value="dibatalkan">Batal</option>
               </select>
-            </div>
+            </div> -->
             <button class="btn-cancel" @click="closeDetailModal">Tutup</button>
           </div>
         </div>
@@ -173,14 +173,6 @@
                   type="number" 
                   placeholder="Contoh: 2" 
                   required 
-                />
-              </div>
-              <div class="form-group">
-                <label>ID Admin</label>
-                <input 
-                  v-model="form.id_admin" 
-                  type="number" 
-                  placeholder="Contoh: 1" 
                 />
               </div>
             </div>
@@ -345,7 +337,7 @@ const saveTransaction = async () => {
   isSaving.value = true
   try {
     if (isEditMode.value) {
-      await api.put(`/dashboard/transactions/${selectedId.value}`, form)
+      await api.patch(`/dashboard/transactions/${selectedId.value}/status`, form)
     } else {
       await api.post('/dashboard/transactions', form)
     }
@@ -765,7 +757,7 @@ th, td {
   border-radius: 8px;
   color: #ffffff;
   box-sizing: border-box;
-}
+} 
 
 .form-group input:focus,
 .form-group select:focus {

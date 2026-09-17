@@ -1,273 +1,333 @@
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import Navbar from '../../components/Navbar.vue'
+import Assalaam from '../../assets/logos/assalaam.png'
+import Assalaam1 from '../../assets/logos/assalaam1.png'
+
+const router = useRouter()
+const images = [Assalaam, Assalaam1]
+const currentImageIndex = ref(0)
+let timer = null
+
+const startTimer = () => {
+  timer = setInterval(() => {
+    currentImageIndex.value = (currentImageIndex.value + 1) % images.length
+  }, 5000)
+}
+
+const setImage = (index) => {
+  currentImageIndex.value = index
+  clearInterval(timer)
+  startTimer()
+}
+
+const navigateToCategory = (catName) => {
+  router.push({ path: '/katalog', query: { category: catName } })
+}
+
+onMounted(() => {
+  startTimer()
+})
+
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
+</script>
+
 <template>
-  <div class="hero-container">
-    <!-- Full Width Background Image + Dark Overlay -->
-    <div class="hero-bg-wrapper">
-      <img 
-        src="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&q=80&w=1600" 
-        alt="Seragam Sekolah SMK" 
-        class="hero-bg-image"
-      />
-      <div class="hero-overlay"></div>
-    </div>
+  <div class="home-page">
+    <Navbar />
 
-    <!-- Header / Navbar -->
-    <header class="navbar">
-      <div class="nav-left">
-        <h1 class="logo">MONATA</h1>
-        <nav class="nav-links">
-          <a href="#katalog">Katalog</a>
-          <a href="#kategori">Kategori</a>
-          <a href="#tentang">Tentang Kami</a>
-        </nav>
-      </div>
-
-      <div class="nav-right">
-        <!-- Search Bar -->
-        <div class="search-box">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    <!-- Hero Section -->
+    <section 
+      class="hero" 
+      :style="{ backgroundImage: `linear-gradient(to bottom, rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.85)), url(${images[currentImageIndex]})` }"
+    >
+      <div class="hero-content">
+        <span class="badge">SMK Assalaam Bandung</span>
+        <h1>Monata</h1>
+        <p>Beli perlengkapan sekolahmu dengan cepat & praktis</p>
+        <router-link to="/katalog" class="btn-cta">
+          Belanja Sekarang
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
           </svg>
-          <input 
-            v-model="searchQuery" 
-            type="text" 
-            placeholder="Cari produk..." 
-            @keyup.enter="handleSearch"
-          />
+        </router-link>
+      </div>
+
+      <!-- Hero Slide Dots -->
+      <div class="slider-dots">
+        <button 
+          v-for="(_, index) in images" 
+          :key="index"
+          class="dot"
+          :class="{ active: currentImageIndex === index }"
+          @click="setImage(index)"
+        ></button>
+      </div>
+    </section>
+
+    <!-- Kategori Populer -->
+    <section class="section categories-section">
+      <div class="section-header">
+        <h2 class="section-title">Kategori Populer</h2>
+        <p class="section-subtitle">Pilih kategori barang yang kamu butuhkan</p>
+      </div>
+      <div class="grid-categories">
+        <div class="category-card" @click="navigateToCategory('Seragam')">
+          <div class="icon-wrapper">👔</div>
+          <h3>Seragam</h3>
+          <span class="card-link">Lihat Produk →</span>
         </div>
-
-        <!-- Tombol Keranjang -->
-        <button class="cart-btn" @click="goToCart">
-          <span>Keranjang</span>
-          <span class="cart-badge">{{ cartCount }}</span>
-        </button>
+        <div class="category-card" @click="navigateToCategory('Buku & Alat Tulis')">
+          <div class="icon-wrapper">📚</div>
+          <h3>Buku & Alat Tulis</h3>
+          <span class="card-link">Lihat Produk →</span>
+        </div>
+        <div class="category-card" @click="navigateToCategory('Atribut Sekolah')">
+          <div class="icon-wrapper">🏷️</div>
+          <h3>Atribut Sekolah</h3>
+          <span class="card-link">Lihat Produk →</span>
+        </div>
       </div>
-    </header>
+    </section>
 
-    <!-- Main Hero Headline (Pojok Kiri Bawah) -->
-    <div class="hero-content">
-      <div class="hero-headline">
-        <h2>Seragam Presisi</h2>
-        <h2>Untuk Masa Depan</h2>
+    <!-- Keunggulan Belanja di Monata -->
+    <section class="section features-section">
+      <div class="section-header">
+        <h2 class="section-title">Kenapa Belanja di Monata?</h2>
+        <p class="section-subtitle">Kemudahan layanan belanja online untuk seluruh siswa</p>
       </div>
-    </div>
+      <div class="grid-features">
+        <div class="feature-box">
+          <div class="feature-icon">⚡</div>
+          <h4>Cepat & Tanpa Antri</h4>
+          <p>Pesan online dari kelas, tinggal ambil pesananmu di koperasi sekolah.</p>
+        </div>
+        <div class="feature-box">
+          <div class="feature-icon">💵</div>
+          <h4>Bayar Tunai</h4>
+          <p>Pembayaran tetap santai menggunakan uang tunai saat pengambilan barang.</p>
+        </div>
+        <div class="feature-box">
+          <div class="feature-icon">👌</div>
+          <h4>Pasti Resmi</h4>
+          <p>Semua produk atribut dan buku standar resmi dari SMK Assalaam.</p>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const searchQuery = ref('')
-const cartCount = ref(0)
-
-const handleSearch = () => {
-  if (!searchQuery.value.trim()) return
-  console.log('Mencari:', searchQuery.value)
-}
-
-const goToCart = () => {
-  console.log('Navigasi ke keranjang')
-}
-</script>
-
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+.home-page {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #0f172a;
+  color: #f8fafc;
+  min-height: 100vh;
+}
 
-/* Main Hero Container */
-.hero-container {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  background-color: #0c0f14;
-  color: #ffffff;
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  overflow: hidden;
+/* Hero Style */
+.hero {
+  height: 70vh;
+  min-height: 480px;
+  background-size: cover;
+  background-position: center;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 32px 48px;
-  box-sizing: border-box;
-}
-
-/* Background Image & Full Overlay (Bikin Nyatu Sama Background) */
-.hero-bg-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-}
-
-.hero-bg-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 30%;
-  filter: contrast(1.1) brightness(0.85);
-}
-
-/* Lapisan Gelap Agar Teks & Navbar Tetap Jelas */
-.hero-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    180deg, 
-    rgba(12, 15, 20, 0.75) 0%, 
-    rgba(12, 15, 20, 0.4) 40%, 
-    rgba(12, 15, 20, 0.9) 100%
-  );
-}
-
-/* Navbar Layout */
-.navbar {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
   position: relative;
-  z-index: 10;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: 0 20px;
+  transition: background-image 0.8s ease-in-out;
 }
 
-.nav-left {
-  display: flex;
-  align-items: center;
-  gap: 40px;
-}
-
-.logo {
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  margin: 0;
-  color: #ffffff;
-}
-
-.nav-links {
-  display: flex;
-  gap: 28px;
-}
-
-.nav-links a {
-  color: #cbd5e1;
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-.nav-links a:hover {
-  color: #ffffff;
-}
-
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-/* Search Bar Styling */
-.search-box {
-  display: flex;
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 99px;
-  padding: 8px 16px;
-  backdrop-filter: blur(12px);
-  transition: all 0.2s ease;
-}
-
-.search-box:focus-within {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-.search-icon {
-  width: 16px;
-  height: 16px;
-  color: #cbd5e1;
-  margin-right: 8px;
-}
-
-.search-box input {
-  background: transparent;
-  border: none;
-  outline: none;
-  color: #ffffff;
-  font-size: 0.875rem;
-  width: 160px;
-}
-
-.search-box input::placeholder {
-  color: #94a3b8;
-}
-
-/* Tombol Keranjang Kanan Atas */
-.cart-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background-color: #ffffff;
-  color: #0c0f14;
-  border: none;
-  padding: 10px 22px;
-  border-radius: 99px;
-  font-weight: 600;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: transform 0.2s, background-color 0.2s;
-}
-
-.cart-btn:hover {
-  background-color: #f1f5f9;
-  transform: translateY(-1px);
-}
-
-.cart-badge {
-  background-color: #0c0f14;
-  color: #ffffff;
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 12px;
-}
-
-/* Hero Headline Position */
 .hero-content {
-  position: relative;
-  z-index: 10;
-  margin-bottom: 20px;
+  max-width: 650px;
+  z-index: 2;
 }
 
-.hero-headline h2 {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 3.75rem;
-  font-weight: 400;
-  line-height: 1.1;
+.badge {
+  background-color: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 6px 16px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+
+.hero-content h1 {
+  font-size: 3.5rem;
   margin: 0;
-  color: #f8fafc;
+  font-weight: 800;
   letter-spacing: -1px;
-  text-shadow: 0 10px 20px rgba(0,0,0,0.6);
+  color: #f8fafc;
 }
 
-/* Responsive Handling */
-@media (max-width: 900px) {
-  .hero-container {
-    padding: 24px;
-  }
+.hero-content p {
+  font-size: 1.2rem;
+  margin: 16px 0 32px;
+  color: #94a3b8;
+  font-weight: 400;
+}
 
-  .nav-links {
-    display: none;
-  }
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background-color: #38bdf8;
+  color: #0f172a;
+  text-decoration: none;
+  font-weight: 700;
+  border-radius: 12px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.35);
+}
 
-  .hero-headline h2 {
-    font-size: 2.5rem;
-  }
+.btn-cta:hover {
+  background-color: #7dd3fc;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(56, 189, 248, 0.5);
+}
 
-  .search-box input {
-    width: 100px;
-  }
+/* Dots Indicator */
+.slider-dots {
+  position: absolute;
+  bottom: 24px;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 99px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dot.active {
+  width: 28px;
+  background-color: #38bdf8;
+}
+
+/* Section Style */
+.section {
+  padding: 64px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0 0 8px 0;
+}
+
+.section-subtitle {
+  color: #94a3b8;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* Categories Grid */
+.grid-categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.category-card {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  padding: 32px 24px;
+  border-radius: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-6px);
+  border-color: #38bdf8;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 0 0 12px rgba(56, 189, 248, 0.15);
+}
+
+.icon-wrapper {
+  font-size: 2.8rem;
+  margin-bottom: 12px;
+}
+
+.category-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  color: #f8fafc;
+}
+
+.card-link {
+  font-size: 13px;
+  color: #38bdf8;
+  font-weight: 600;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.category-card:hover .card-link {
+  opacity: 1;
+}
+
+/* Features Grid */
+.grid-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.feature-box {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  padding: 28px;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.feature-box:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateY(-4px);
+}
+
+.feature-icon {
+  font-size: 2rem;
+  margin-bottom: 16px;
+}
+
+.feature-box h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.15rem;
+  color: #f8fafc;
+}
+
+.feature-box p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 </style>

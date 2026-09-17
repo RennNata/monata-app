@@ -4,13 +4,13 @@ import LandingPageView from '../views/LandingPageView.vue'
 
 // Public
 import HomeView from '../views/Public/HomeView.vue'
+import KatalogView from '../views/Public/KatalogView.vue'
 
 // Auth
 import LoginView from '../views/Auth/LoginView.vue'
 import RegisterView from '../views/Auth/RegisterView.vue'
 
 // Admin
-import AdminLayout from '../views/Admin/AdminLayout.vue' 
 import DashboardView from '../views/Admin/DashboardView.vue'
 
 import KelolaKategori from '../views/Admin/KelolaKategori.vue'
@@ -23,8 +23,9 @@ const routes = [
   { path: '/home', component: HomeView, name: 'home' },
   { path: '/login', component: LoginView, name: 'login' },
   { path: '/register', component: RegisterView, name: 'register' },
-  
-  // Grouping khusus Admin (Nested Routes)
+  { path: '/katalog', component: KatalogView, name: 'katalog' },
+
+  // admin
   { path: '/dashboard', component: DashboardView, meta: { requiresAuth: true, roles: ['admin', 'super_admin'] } },
   { path: '/dashboard/categories', component: KelolaKategori, meta: { requiresAuth: true, roles: ['admin', 'super_admin'] } },
   { path: '/dashboard/products', component: KelolaProduk, meta: { requiresAuth: true, roles: ['admin', 'super_admin'] } },

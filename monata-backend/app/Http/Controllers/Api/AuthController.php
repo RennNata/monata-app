@@ -42,14 +42,11 @@ class AuthController extends Controller
     {
         try {
             $validated = $request->validate([
-                'name' => 'required|string',
                 'nis_nip' => 'required|string',
                 'password' => 'required'
             ]);
 
-            $user = User::where('name', $validated['name'])
-                ->where('nis_nip', $validated['nis_nip'])
-                ->first();
+            $user = User::where('nis_nip', $validated['nis_nip'])->first();
 
             if (!$user) {
                 return response()->json([

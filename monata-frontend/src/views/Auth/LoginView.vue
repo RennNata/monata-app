@@ -16,16 +16,6 @@
 
         <form @submit.prevent="handleLogin">
           <div class="input-group">
-            <label>Nama Lengkap</label>
-            <input
-              type="text"
-              v-model="form.name"
-              required
-              placeholder="Contoh: Budi Santoso"
-            />
-          </div>
-
-          <div class="input-group">
             <label>NIS / NIP</label>
             <input
               type="text"
@@ -93,7 +83,6 @@ import axios from "axios";
 
 const router = useRouter();
 const form = ref({
-  name: "",
   nis_nip: "",
   password: "",
 });
